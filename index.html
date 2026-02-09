@@ -1,206 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Valentine 💖</title>
-.emoji-gif {
-  width: 300px;
-  height: 350px;
-  object-fix: contain;
-  max-width:80vw;
-  max-height: 60vw;
-}
- 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Valentine 💖</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
- 
-body {
-  background: #ffffff;
-  overflow: hidden;
-}
- 
-/* ---------- START SCREEN ---------- */
-#start {
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  overflow: hidden;
-}
- 
-#emoji {
-  width: 120px;
-  height: 70px;
-  margin-bottom: 20px;
-}
- 
-h1 {
-  font-size: 1.2rem;
-  margin-bottom: 20px;
-}
- 
-/* ---------- BUTTONS ---------- */
-.buttons {
-  position: relative;
-  width: 200px;
-  height: 100px;
-}
- 
-button {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  position: absolute;
-}
- 
-#yesBtn {
-  background: #ff4d6d;
-  color: white;
-  left: 0;
-  bottom: 0;
-}
- 
-#noBtn {
-  background: #ddd;
-  color: #333;
-  right: 0;
-  bottom: 0;
-}
- 
-/* ---------- VIDEO SCREEN ---------- */
-#videoScreen {
-  display: none;
-  height: 100vh;
-  width: 100vw;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-video {
-  width: 100%;
-  height: 100%;
- object-fit: contain;
+  <style>
+    /* --------- Base --------- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --brand: #ff4d6d;
+      --brand-2: #ff6b81;
+      --accent: #E0115F;
+      --text: #333;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #ffffff;
+      color: var(--text);
+      overflow: hidden; /* keep confetti within viewport */
+    }
 
-}
- 
-/* ---------- CONFETTI ---------- */
-.confetti {
-  position: fixed;
-  top: -10px;
-  width: 10px;
-  height: 10px;
-  background-color: red;
+    /* --------- Start Screen --------- */
+    #start {
+      height: 100vh; width: 100vw;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center; gap: 18px; padding: 16px;
+    }
 
-}
- 
-@keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(360deg);
-  }
-}
- 
-/* ---------- MOBILE OPTIMIZATION ---------- */
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.4rem;
-  }
-  #emoji {
-    width: 100px;
-  }
-}
-</style>
+    /* Bigger, responsive GIF */
+    .emoji-gif {
+      width: clamp(220px, 28vw, 360px);
+      height: clamp(220px, 28vw, 360px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .question {
+      font-size: clamp(20px, 3.2vw, 32px);
+      font-family: 'Pacifico', cursive;
+    }
+    .name {
+      font-size: clamp(22px, 3.4vw, 36px);
+      font-family: 'Pacifico', cursive;
+      font-weight: 700;
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    /* --------- Buttons Area --------- */
+    .buttons {
+      position: relative;           /* anchor for absolute buttons */
+      width: 360px;                 /* increase for more dodging room */
+      height: 160px;
+      margin-top: 8px;
+      user-select: none;
+      touch-action: none;           /* avoid accidental taps while it jumps */
+      border-radius: 16px;
+    }
+    .buttons button {
+      position: absolute;           /* IMPORTANT: use left/top for movement */
+      left: 0; top: 0;
+      padding: 12px 24px;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 90ms ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      will-change: left, top, transform;
+    }
+    #yesBtn {
+      left: 12px;                   /* fixed placement */
+      bottom: 12px;                 /* bottom is fine for static Yes */
+      top: auto;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+    }
+    #noBtn {
+      background: #ddd;
+      color: #333;
+      min-width: 92px;              /* stable size for better bounds calc */
+    }
+
+    /* --------- Video Screen (fills screen; no black bars) --------- */
+    #videoScreen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      /* Remove any background color so you don't see borders */
+      background: transparent;
+    }
+    #proposalVideo {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      /* This is the key change: fill viewport and crop as needed */
+      object-fit: contain;
+      /* Remove black default background some browsers show */
+      background-color: transparent;
+    }
+
+    /* --------- Confetti --------- */
+    .confetti {
+      position: fixed; top: -10px;
+      width: 10px; height: 10px; z-index: 20;
+      pointer-events: none;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(360deg); }
+    }
+
+    /* --------- Mobile --------- */
+    @media (max-width: 600px) {
+      .buttons { width: 300px; height: 140px; }
+    }
+  </style>
 </head>
- 
 <body>
- 
-<!-- START SCREEN -->
-<div id="start">
-  <!-- Emoji GIF / PNG (transparent works best) -->
-  <img id="emoji" src="emoji.gif" class="emoji-gif" alt="emoji">
- 
-  <h1 style= "font-family:'Pacifico', cursive; font-size: 20px">Will you be my Valentine? 🥰</h1>
-  
 
-<h2 style="font-family: 'Pacifico', cursive; color: #E0115F; font-size: 18px; font-weight: bold; font-style: italic;">
+  <!-- START SCREEN -->
+  <div id="start">
+    <!-- Your GIF (use a higher-res file for crispness) -->
+    <img src="emoji.gif" alt="emoji" class="emoji-gif">
 
-  Krishna💖
-</h2>
+    <h1 class="question">Will you be my Valentine? 🥰</h1>
+    <h2 class="name">Krishna 💖</h2>
 
-
-
- 
-  <div class="buttons">
-    <button id="yesBtn">Yes 😍</button>
-    <button id="noBtn">No 🤭</button>
+    <div class="buttons" id="buttonsBox" aria-label="Answer buttons">
+      <button id="yesBtn" aria-label="Yes">Yes 😍</button>
+      <button id="noBtn"  aria-label="No">No 🤭</button>
+    </div>
   </div>
-</div>
- 
-<!-- VIDEO SCREEN -->
-<div id="videoScreen">
-  <video id="proposalVideo" loop muted playsinline preload="auto">
-    <source src="proposal.mp4" type="video/mp4">
-  </video>
-</div>
- 
-<script>
-const noBtn = document.getElementById("noBtn");
-const yesBtn = document.getElementById("yesBtn");
-const start = document.getElementById("start");
-const videoScreen = document.getElementById("videoScreen");
-const video = document.getElementById("proposalVideo");
- 
-/* Naughty NO button */
-noBtn.addEventListener("mouseover", () => {
-  const x = Math.random() * 250;
-  const y = Math.random() * 100;
-  noBtn.style.transform = `translate(${x}px, ${y}px)`;
-}); 
 
+  <!-- VIDEO SCREEN -->
+  <div id="videoScreen" aria-hidden="true">
+    <video
+      id="proposalVideo"
+      loop
+      muted
+      playsinline
+      preload="auto"
+      webkit-playsinline
+      x5-playsinline
+    >
+      <source src="proposal.mp4" type="video/mp4">
+    </video>
+  </div>
 
- 
-/* YES button click */
-yesBtn.addEventListener("click", () => {
-  start.style.display = "none";
-  videoScreen.style.display = "block";
-  video.muted = false;   // music allowed after click
-  video.currentTime=0;
-  video.play();
-  startConfetti();
-});
- 
-/* Confetti */
-function startConfetti() {
-  for (let i = 0; i < 40; i++) {
-    const confetti = document.createElement("div");
-    confetti.classList.add("confetti");
-    confetti.style.left = Math.random() * 100 + "vw";
-    confetti.style.backgroundColor =
-      ["#ff4d6d", "#ffd166", "#06d6a0", "#118ab2"][Math.floor(Math.random() * 4)];
-    confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
-    document.body.appendChild(confetti);
- 
-    setTimeout(() => confetti.remove(), 4000);
-  }
-}
-</script>
- 
+  <script>
+    /* ---------------- Elements ---------------- */
+    const box   = document.getElementById('buttonsBox');
+    const noBtn = document.getElementById('noBtn');
+    const yesBtn = document.getElementById('yesBtn');
+    const start = document.getElementById('start');
+    const videoScreen = document.getElementById('videoScreen');
+    const video = document.getElementById('proposalVideo');
+
+    /* ---------------- Behavior Config ---------------- */
+    // Choose one: 'random', 'angle', 'repel', or 'cycle' to rotate between them.
+    let JUMP_MODE = 'cycle';
+
+    const AVOID_RADIUS = 120;   // pointer proximity distance to trigger a jump
+    const STEP_DISTANCE = 140;  // base hop distance for 'angle' mode
+    const PUSH_EXTRA = 28;      // extra push for 'repel' mode beyond the radius
+    const ANGLE_RANDOMNESS = 18 * (Math.PI/180); // ±18° wobble
+
+    /* ---------------- Utilities ---------------- */
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    function rects() {
+      const boxRect = box.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      return { boxRect, btnRect };
+    }
+
+    function withinBounds(left, top, boxRect, btnRect) {
+      const maxLeft = boxRect.width  - btnRect.width;
+      const maxTop  = boxRect.height - btnRect.height;
+      return { left: clamp(left, 0, maxLeft), top: clamp(top, 0, maxTop) };
+    }
+
+    function setNoPosition(left, top) {
+      noBtn.style.left = left + 'px';
+      noBtn.style.top  = top  + 'px';
+      // small pulse so jumps feel snappy
+      noBtn.style.transform = 'scale(1.06)';
+      setTimeout(() => (noBtn.style.transform = 'scale(1)'), 90);
+    }
+
+    function currentOffsets() {
+      const { boxRect, btnRect } = rects();
+      return {
+        x: btnRect.left - boxRect.left,
+        y: btnRect.top  - boxRect.top,
+        boxRect, btnRect
+      };
+    }
+
+    /* ---------------- Jump Styles ---------------- */
+    function jumpRandom() {
+      const { boxRect, btnRect } = rects();
+      const maxLeft = boxRect.width  - btnRect.width;
+      const maxTop  = boxRect.height - btnRect.height;
+      setNoPosition(Math.random() * maxLeft, Math.random() * maxTop);
+    }
+
+    function jumpAngle() {
+      const { x, y, boxRect, btnRect } = currentOffsets();
+      // random angle (any direction)
+      let theta = Math.random() * Math.PI * 2;
+      const step = STEP_DISTANCE * (0.75 + Math.random() * 0.5); // 75%–125%
+      const nx = x + Math.cos(theta) * step;
+      const ny = y + Math.sin(theta) * step;
+      const { left, top } = withinBounds(nx, ny, boxRect, btnRect);
+      setNoPosition(left, top);
+    }
+
+    function jumpRepelFrom(clientX, clientY) {
+      const { boxRect, btnRect } = rects();
+      const cx = btnRect.left + btnRect.width  / 2;
+      const cy = btnRect.top  + btnRect.height / 2;
+
+      let dx = cx - clientX;
+      let dy = cy - clientY;
+      const dist = Math.hypot(dx, dy) || 1;
+
+      let theta = Math.atan2(dy, dx);
+      theta += (Math.random() * 2 - 1) * ANGLE_RANDOMNESS; // wobble
+
+      const push = (dist < AVOID_RADIUS ? (AVOID_RADIUS - dist) : 0) + PUSH_EXTRA + (Math.random()*20);
+
+      const currentLeft = btnRect.left - boxRect.left;
+      const currentTop  = btnRect.top  - boxRect.top;
+
+      const nx = currentLeft + Math.cos(theta) * push;
+      const ny = currentTop  + Math.sin(theta) * push;
+
+      const bounded = withinBounds(nx, ny, boxRect, btnRect);
+      setNoPosition(bounded.left, bounded.top);
+    }
+
+    // Cycle helper
+    const cycle = ['random', 'angle', 'repel'];
+    let cycleIndex = 0;
+    function nextMode() {
+      const mode = cycle[cycleIndex % cycle.length];
+      cycleIndex++;
+      return mode;
+    }
+
+    function performJump(event) {
+      const mode = (JUMP_MODE === 'cycle') ? nextMode() : JUMP_MODE;
+      if (mode === 'random') {
+        jumpRandom();
+      } else if (mode === 'angle') {
+        jumpAngle();
+      } else {
+        const px = event?.clientX ?? (window.innerWidth / 2);
+        const py = event?.clientY ?? (window.innerHeight / 2);
+        jumpRepelFrom(px, py);
+      }
+    }
+
+    /* ---------------- Events ---------------- */
+    // Initialize positions (No starts at a random spot inside the box)
+    window.addEventListener('load', () => {
+      jumpRandom();
+    });
+
+    // Keep No inside after resize/rotation
+    window.addEventListener('resize', () => {
+      const { x, y, boxRect, btnRect } = currentOffsets();
+      const bounded = withinBounds(x, y, boxRect, btnRect);
+      setNoPosition(bounded.left, bounded.top);
+    });
+
+    // Proximity: if the pointer gets close, jump (repel or cycle modes)
+    window.addEventListener('pointermove', (e) => {
+      if (JUMP_MODE === 'repel' || JUMP_MODE === 'cycle') {
+        const { btnRect } = rects();
+        const cx = btnRect.left + btnRect.width  / 2;
+        const cy = btnRect.top  + btnRect.height / 2;
+        const dist = Math.hypot(cx - e.clientX, cy - e.clientY);
+        if (dist < AVOID_RADIUS) performJump(e);
+      }
+    }, { passive: true });
+
+    // Immediate flee on direct attempts (works for mouse & touch)
+    const flee = (e) => { if (e.cancelable) e.preventDefault(); performJump(e); };
+    noBtn.addEventListener('pointerenter', flee);
+    noBtn.addEventListener('pointerdown',  flee);  // captures click/touch attempts
+    noBtn.addEventListener('focus',        flee);  // keyboard focus jump
+    noBtn.addEventListener('click', (e) => { e.preventDefault(); performJump(e); });
+
+    // YES -> show video with sound + confetti
+    yesBtn.addEventListener('click', () => {
+      start.style.display = 'none';
+      videoScreen.style.display = 'block';
+      videoScreen.setAttribute('aria-hidden', 'false');
+
+      // Unmute after a real user gesture (allowed by browsers)
+      video.muted = false;
+      video.currentTime = 0;
+
+      // Some browsers need a catch for autoplay with audio:
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If it fails (policy), keep muted but still play
+          video.muted = true;
+          video.play();
+        });
+      }
+
+      startConfetti();
+    });
+
+    /* ---------------- Confetti ---------------- */
+    function startConfetti() {
+      for (let i = 0; i < 40; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.backgroundColor = ['#ff4d6d', '#ffd166', '#06d6a0', '#118ab2'][Math.floor(Math.random()*4)];
+        
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }
+    }
+  </script>
 </body>
-
 </html>
-
-
-
